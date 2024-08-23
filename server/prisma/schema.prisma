@@ -98,12 +98,14 @@ model Receiving {
 }
 
 model Settings {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  storeName String
-  timezone  String
-  currency  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  storeName         String
+  timezone          String
+  currency          String
+  lowStockThreshold Int
+  vatRate           Float
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 type ContactInfo {
