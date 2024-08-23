@@ -1,0 +1,143 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
+  email     String      @unique
+  password  String
+  name      String
+  role      String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  sales     Sale[]
+  Receiving Receiving[]
+}
+
+model Category {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  name      String    @unique
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Product {
+  id           String         @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  description  String
+  price        Float
+  stock        Int
+  categoryId   String         @db.ObjectId
+  category     Category       @relation(fields: [categoryId], references: [id])
+  supplierId   String         @db.ObjectId
+  supplier     Supplier       @relation(fields: [supplierId], references: [id])
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  SaleItem     SaleItem[]
+  OrderItem    OrderItem[]
+  ReceivedItem ReceivedItem[]
+}
+
+model Supplier {
+  id          String         @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  contactInfo ContactInfo
+  orders      RestockOrder[]
+  products    Product[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model Sale {
+  id         String     @id @default(auto()) @map("_id") @db.ObjectId
+  date       DateTime   @default(now())
+  total      Float
+  items      SaleItem[]
+  employeeId String     @db.ObjectId
+  employee   User       @relation(fields: [employeeId], references: [id])
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+model RestockOrder {
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  supplierId   String      @db.ObjectId
+  supplier     Supplier    @relation(fields: [supplierId], references: [id])
+  items        OrderItem[]
+  orderDate    DateTime    @default(now())
+  receivedDate DateTime?
+  status       String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  Receiving    Receiving[]
+}
+
+model Receiving {
+  id             String         @id @default(auto()) @map("_id") @db.ObjectId
+  restockOrderId String         @db.ObjectId
+  restockOrder   RestockOrder   @relation(fields: [restockOrderId], references: [id])
+  receivedById   String         @db.ObjectId
+  receivedBy     User           @relation(fields: [receivedById], references: [id])
+  dateReceived   DateTime       @default(now())
+  items          ReceivedItem[]
+  status         String
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model Settings {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  storeName String
+  timezone  String
+  currency  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+type ContactInfo {
+  phone   String
+  email   String
+  address String
+}
+
+model SaleItem {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  saleId    String  @db.ObjectId
+  sale      Sale    @relation(fields: [saleId], references: [id])
+  productId String  @db.ObjectId
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Float
+}
+
+model OrderItem {
+  id               String       @id @default(auto()) @map("_id") @db.ObjectId
+  restockOrderId   String       @db.ObjectId
+  restockOrder     RestockOrder @relation(fields: [restockOrderId], references: [id])
+  productId        String       @db.ObjectId
+  product          Product      @relation(fields: [productId], references: [id])
+  quantityOrdered  Int
+  quantityReceived Int
+  status           String
+}
+
+model ReceivedItem {
+  id               String    @id @default(auto()) @map("_id") @db.ObjectId
+  receivingId      String    @db.ObjectId
+  receiving        Receiving @relation(fields: [receivingId], references: [id])
+  productId        String    @db.ObjectId
+  product          Product   @relation(fields: [productId], references: [id])
+  quantityReceived Int
+}
