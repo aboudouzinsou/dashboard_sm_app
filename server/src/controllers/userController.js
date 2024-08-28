@@ -13,11 +13,21 @@ exports.register = [
   async (req, res, next) => {
     try {
       const user = await userService.createUser(req.body);
-      res
-        .status(201)
-        .json({ message: "User created successfully", userId: user.id });
+      if (user && user.id) {
+        res
+          .status(201)
+          .json({ message: "User created successfully", userId: user.id });
+      } else {
+        throw new Error("User creation failed: Invalid user object returned");
+      }
     } catch (error) {
-      next(error);
+      console.error("Registration error:", error);
+      if (error.code === "P2002") {
+        return res.status(400).json({ message: "Email already in use" });
+      }
+      res
+        .status(500)
+        .json({ message: "Internal server error during registration" });
     }
   },
 ];

@@ -343,6 +343,13 @@ async function main() {
       }
     }
 
+    await db
+      .collection("User")
+      .updateMany(
+        { updatedAt: { $eq: null } },
+        { $set: { updatedAt: new Date() } },
+      );
+
     console.log("Seed completed successfully");
   } catch (error) {
     console.error("An error occurred during seeding:", error);

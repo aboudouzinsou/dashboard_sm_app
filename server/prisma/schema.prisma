@@ -20,7 +20,7 @@ model User {
   name      String
   role      String
   createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  updatedAt DateTime    @default(now()) @updatedAt
   sales     Sale[]
   Receiving Receiving[]
 }
@@ -30,7 +30,7 @@ model Category {
   name      String    @unique
   products  Product[]
   createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  updatedAt DateTime  @default(now()) @updatedAt
 }
 
 model Product {
@@ -44,7 +44,7 @@ model Product {
   supplierId   String         @db.ObjectId
   supplier     Supplier       @relation(fields: [supplierId], references: [id])
   createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  updatedAt    DateTime       @default(now()) @updatedAt
   SaleItem     SaleItem[]
   OrderItem    OrderItem[]
   ReceivedItem ReceivedItem[]
@@ -57,7 +57,7 @@ model Supplier {
   orders      RestockOrder[]
   products    Product[]
   createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  updatedAt   DateTime       @default(now()) @updatedAt
 }
 
 model Sale {
@@ -67,8 +67,8 @@ model Sale {
   items      SaleItem[]
   employeeId String     @db.ObjectId
   employee   User       @relation(fields: [employeeId], references: [id])
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
+  createdAt  DateTime?  @default(now())
+  updatedAt  DateTime   @default(now()) @updatedAt
 }
 
 model RestockOrder {
@@ -80,7 +80,7 @@ model RestockOrder {
   receivedDate DateTime?
   status       String
   createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  updatedAt    DateTime    @default(now()) @updatedAt
   Receiving    Receiving[]
 }
 
@@ -94,18 +94,18 @@ model Receiving {
   items          ReceivedItem[]
   status         String
   createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  updatedAt      DateTime       @default(now()) @updatedAt
 }
 
 model Settings {
-  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
   storeName         String
   timezone          String
   currency          String
   lowStockThreshold Int
   vatRate           Float
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt         DateTime? @default(now())
+  updatedAt         DateTime  @default(now()) @updatedAt
 }
 
 type ContactInfo {

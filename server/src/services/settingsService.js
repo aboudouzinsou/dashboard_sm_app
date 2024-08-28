@@ -25,6 +25,8 @@ class SettingsService {
         timezone: "UTC",
         lowStockThreshold: 10,
         vatRate: 20,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
     });
   }

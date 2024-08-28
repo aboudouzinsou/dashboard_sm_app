@@ -33,6 +33,38 @@ class ProductService {
     });
   }
 
+  async getProductById(productId) {
+    return prisma.product.findUnique({
+      where: { id: productId },
+      include: {
+        category: true,
+        supplier: true,
+      },
+    });
+  }
+
+  async getAllProducts() {
+    return prisma.product.findMany({
+      include: {
+        category: true,
+        supplier: true,
+      },
+    });
+  }
+
+  async updateProduct(productId, productData) {
+    return prisma.product.update({
+      where: { id: productId },
+      data: productData,
+    });
+  }
+
+  async deleteProduct(productId) {
+    return prisma.product.delete({
+      where: { id: productId },
+    });
+  }
+
   async getLowStockProducts() {
     const settings = await settingsService.getSettings();
     return prisma.product.findMany({

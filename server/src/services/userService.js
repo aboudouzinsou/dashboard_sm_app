@@ -2,6 +2,7 @@ const prisma = require("../prisma");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const settingsService = require("./settingsService");
+const { ObjectId } = require("mongodb");
 
 class UserService {
   async authenticate(email, password) {
@@ -16,13 +17,21 @@ class UserService {
   }
 
   async createUser(userData) {
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
-    return prisma.user.create({
-      data: {
-        ...userData,
-        password: hashedPassword,
-      },
-    });
+    try {
+      const hashedPassword = await bcrypt.hash(userData.password, 10);
+
+      // Créer l'utilisateur sans utiliser de transaction
+      const createdUser = await prisma.user.create({
+        data: {
+          ...userData,
+          password: hashedPassword,
+        },
+      });
+
+      return createdUser;
+    } catch (error) {
+      throw error;
+    }
   }
 
   async getUserById(id) {
