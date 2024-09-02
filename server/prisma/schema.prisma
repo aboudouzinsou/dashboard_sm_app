@@ -39,15 +39,16 @@ model Product {
   description  String
   price        Float
   stock        Int
-  categoryId   String         @db.ObjectId
-  category     Category       @relation(fields: [categoryId], references: [id])
-  supplierId   String         @db.ObjectId
-  supplier     Supplier       @relation(fields: [supplierId], references: [id])
+  categoryId   String?        @db.ObjectId
+  category     Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  supplierId   String?        @db.ObjectId
+  supplier     Supplier?      @relation(fields: [supplierId], references: [id], onDelete: SetNull)
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @default(now()) @updatedAt
   SaleItem     SaleItem[]
   OrderItem    OrderItem[]
   ReceivedItem ReceivedItem[]
+  isDeleted    Boolean        @default(false)
 }
 
 model Supplier {
@@ -64,17 +65,19 @@ model Sale {
   id         String     @id @default(auto()) @map("_id") @db.ObjectId
   date       DateTime   @default(now())
   total      Float
+  vatAmount  Float
+  subtotal   Float
   items      SaleItem[]
   employeeId String     @db.ObjectId
   employee   User       @relation(fields: [employeeId], references: [id])
-  createdAt  DateTime?  @default(now())
+  createdAt  DateTime   @default(now())
   updatedAt  DateTime   @default(now()) @updatedAt
 }
 
 model RestockOrder {
   id           String      @id @default(auto()) @map("_id") @db.ObjectId
-  supplierId   String      @db.ObjectId
-  supplier     Supplier    @relation(fields: [supplierId], references: [id])
+  supplierId   String?     @db.ObjectId
+  supplier     Supplier?   @relation(fields: [supplierId], references: [id])
   items        OrderItem[]
   orderDate    DateTime    @default(now())
   receivedDate DateTime?
@@ -115,11 +118,11 @@ type ContactInfo {
 }
 
 model SaleItem {
-  id        String  @id @default(auto()) @map("_id") @db.ObjectId
-  saleId    String  @db.ObjectId
-  sale      Sale    @relation(fields: [saleId], references: [id])
-  productId String  @db.ObjectId
-  product   Product @relation(fields: [productId], references: [id])
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  saleId    String   @db.ObjectId
+  sale      Sale     @relation(fields: [saleId], references: [id])
+  productId String?  @db.ObjectId
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
   quantity  Int
   price     Float
 }
@@ -128,8 +131,8 @@ model OrderItem {
   id               String       @id @default(auto()) @map("_id") @db.ObjectId
   restockOrderId   String       @db.ObjectId
   restockOrder     RestockOrder @relation(fields: [restockOrderId], references: [id])
-  productId        String       @db.ObjectId
-  product          Product      @relation(fields: [productId], references: [id])
+  productId        String?      @db.ObjectId
+  product          Product?     @relation(fields: [productId], references: [id], onDelete: SetNull)
   quantityOrdered  Int
   quantityReceived Int
   status           String
@@ -139,7 +142,7 @@ model ReceivedItem {
   id               String    @id @default(auto()) @map("_id") @db.ObjectId
   receivingId      String    @db.ObjectId
   receiving        Receiving @relation(fields: [receivingId], references: [id])
-  productId        String    @db.ObjectId
-  product          Product   @relation(fields: [productId], references: [id])
+  productId        String?   @db.ObjectId
+  product          Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
   quantityReceived Int
 }

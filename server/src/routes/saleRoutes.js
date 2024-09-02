@@ -31,6 +31,13 @@ router.get(
   saleController.getDailySalesReport,
 );
 
+router.get(
+  "/",
+  authenticateToken,
+  authorizeRoles("admin", "manager"),
+  saleController.getSalesByDateRange,
+);
+
 router.delete(
   "/:id",
   authenticateToken,

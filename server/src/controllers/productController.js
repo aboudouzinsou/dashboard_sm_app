@@ -1,6 +1,7 @@
 const productService = require("../services/productService");
 const { validate } = require("../middlewares/validationMiddleware");
 const { body } = require("express-validator");
+const prisma = require("../prisma");
 
 exports.createProduct = [
   body("name").notEmpty().withMessage("Product name is required"),
@@ -23,15 +24,6 @@ exports.createProduct = [
   },
 ];
 
-exports.getProducts = async (req, res, next) => {
-  try {
-    const products = await productService.getAllProducts();
-    res.json(products);
-  } catch (error) {
-    next(error);
-  }
-};
-
 exports.getProduct = async (req, res, next) => {
   try {
     const product = await productService.getProductById(req.params.id);
@@ -40,7 +32,35 @@ exports.getProduct = async (req, res, next) => {
     }
     res.json(product);
   } catch (error) {
+    if (error.message === "Invalid product ID") {
+      return res.status(400).json({ message: "Invalid product ID" });
+    }
     next(error);
+  }
+};
+
+exports.getActiveProducts = async (req, res, next) => {
+  try {
+    const products = await productService.getActiveProducts();
+    res.json(products);
+  } catch (error) {
+    console.error("Error in getActiveProducts controller:", error);
+    res.status(500).json({
+      message: "Failed to fetch active products",
+      error: error.message,
+    });
+  }
+};
+
+exports.getProducts = async (req, res, next) => {
+  try {
+    const products = await productService.getAllProducts();
+    res.json(products);
+  } catch (error) {
+    console.error("Error in getProducts controller:", error);
+    res
+      .status(500)
+      .json({ message: "Failed to fetch products", error: error.message });
   }
 };
 
@@ -60,6 +80,11 @@ exports.updateProduct = [
   validate,
   async (req, res, next) => {
     try {
+      // Convertir stock en entier si nécessaire avant la mise à jour
+      if (req.body.stock) {
+        req.body.stock = parseInt(req.body.stock, 10);
+      }
+
       const updatedProduct = await productService.updateProduct(
         req.params.id,
         req.body,
@@ -71,12 +96,23 @@ exports.updateProduct = [
   },
 ];
 
-exports.deleteProduct = async (req, res, next) => {
+exports.deleteProduct = async (req, res) => {
   try {
-    await productService.deleteProduct(req.params.id);
-    res.json({ message: "Product deleted successfully" });
+    const { id } = req.params;
+
+    // Marquer le produit comme supprimé
+    const product = await prisma.product.update({
+      where: { id },
+      data: { isDeleted: true },
+    });
+
+    res.json({
+      message: "Product marked as deleted successfully.",
+      product,
+    });
   } catch (error) {
-    next(error);
+    console.error("Error marking product as deleted:", error);
+    res.status(500).json({ error: "Error marking product as deleted." });
   }
 };
 

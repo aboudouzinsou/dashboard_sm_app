@@ -6,6 +6,9 @@ const {
   authorizeRoles,
 } = require("../middlewares/authMiddleware");
 
+// Placer la route /active avant /:id
+router.get("/active", authenticateToken, productController.getActiveProducts);
+
 router.post(
   "/",
   authenticateToken,
@@ -13,8 +16,12 @@ router.post(
   productController.createProduct,
 );
 router.get("/", authenticateToken, productController.getProducts);
+router.get(
+  "/low-stock",
+  authenticateToken,
+  productController.getLowStockProducts,
+);
 router.get("/:id", authenticateToken, productController.getProduct);
-router.get("/", authenticateToken, productController.getLowStockProducts);
 router.put(
   "/:id",
   authenticateToken,

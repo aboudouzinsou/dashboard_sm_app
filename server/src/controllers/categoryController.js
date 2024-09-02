@@ -54,9 +54,31 @@ exports.updateCategory = async (req, res) => {
 exports.deleteCategory = async (req, res) => {
   try {
     const { id } = req.params;
-    await prisma.category.delete({ where: { id } });
-    res.json({ message: "Category deleted successfully" });
+
+    // Mettre à jour les produits associés pour les marquer comme supprimés
+    await prisma.product.updateMany({
+      where: {
+        categoryId: id,
+      },
+      data: {
+        isDeleted: true,
+      },
+    });
+
+    // Supprimer la catégorie
+    await prisma.category.delete({
+      where: { id },
+    });
+
+    res.json({
+      message:
+        "Category deleted successfully and associated products marked as deleted.",
+    });
   } catch (error) {
-    res.status(500).json({ error: "Error deleting category" });
+    console.error("Error deleting category:", error);
+    res.status(500).json({
+      error:
+        "Error deleting category and marking associated products as deleted.",
+    });
   }
 };

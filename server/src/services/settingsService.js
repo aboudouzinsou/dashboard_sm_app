@@ -10,10 +10,15 @@ class SettingsService {
   }
 
   async updateSettings(updateData) {
+    // Assurez-vous d'obtenir l'ID actuel des paramètres
     const currentSettings = await this.getSettings();
+
+    // Filtrer les champs non modifiables ou non présents dans `updateData`
+    const { id, createdAt, updatedAt, ...data } = updateData;
+
     return prisma.settings.update({
       where: { id: currentSettings.id },
-      data: updateData,
+      data: data,
     });
   }
 

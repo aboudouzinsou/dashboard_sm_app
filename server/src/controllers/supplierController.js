@@ -4,11 +4,17 @@ exports.createSupplier = async (req, res) => {
   try {
     const { name, contactInfo } = req.body;
     const supplier = await prisma.supplier.create({
-      data: { name, contactInfo },
+      data: {
+        name,
+        contactInfo: contactInfo, // Directement assigner l'objet contactInfo
+      },
     });
     res.status(201).json(supplier);
   } catch (error) {
-    res.status(500).json({ error: "Error creating supplier" });
+    console.error("Error creating supplier:", error);
+    res
+      .status(500)
+      .json({ error: "Error creating supplier", details: error.message });
   }
 };
 
@@ -54,9 +60,19 @@ exports.updateSupplier = async (req, res) => {
 exports.deleteSupplier = async (req, res) => {
   try {
     const { id } = req.params;
-    await prisma.supplier.delete({ where: { id } });
-    res.json({ message: "Supplier deleted successfully" });
+
+    // Supprimer le fournisseur et les produits associés automatiquement grâce à la cascade
+    await prisma.supplier.delete({
+      where: { id },
+    });
+
+    res.json({
+      message: "Supplier and associated products deleted successfully",
+    });
   } catch (error) {
-    res.status(500).json({ error: "Error deleting supplier" });
+    console.error("Error deleting supplier:", error);
+    res
+      .status(500)
+      .json({ error: "Error deleting supplier", details: error.message });
   }
 };

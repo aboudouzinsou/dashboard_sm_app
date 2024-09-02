@@ -16,10 +16,24 @@ router.post(
 router.post("/login", userController.login);
 
 router.get(
+  "/me",
+  authenticateToken,
+  authorizeRoles("admin", "manager", "seller"),
+  userController.getMe,
+);
+
+router.get(
   "/:id",
   authenticateToken,
   authorizeRoles("admin", "manager"),
   userController.getUser,
+);
+
+router.get(
+  "/",
+  authenticateToken,
+  authorizeRoles("admin", "manager"),
+  userController.getAllUsers,
 );
 
 router.put(

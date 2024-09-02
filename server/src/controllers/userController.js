@@ -1,6 +1,8 @@
 const userService = require("../services/userService");
 const { validate } = require("../middlewares/validationMiddleware");
 const { body } = require("express-validator");
+const jwt = require("jsonwebtoken");
+const { format } = require("date-fns");
 
 exports.register = [
   body("email").isEmail().withMessage("Enter a valid email"),
@@ -14,9 +16,14 @@ exports.register = [
     try {
       const user = await userService.createUser(req.body);
       if (user && user.id) {
-        res
-          .status(201)
-          .json({ message: "User created successfully", userId: user.id });
+        res.status(201).json({
+          message: "User created successfully",
+          userId: user.id,
+          createdAt: format(
+            new Date(user.createdAt),
+            "yyyy-MM-dd'T'HH:mm:ss.SSSxxx",
+          ),
+        });
       } else {
         throw new Error("User creation failed: Invalid user object returned");
       }
@@ -49,12 +56,26 @@ exports.login = [
 
 exports.getUser = async (req, res, next) => {
   try {
-    const user = await userService.getUserById(req.params.id);
+    const { id } = req.params;
+
+    if (id === "me") {
+      // If the ID is 'me', use the authenticated user from the request
+      if (!req.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      return res.json(req.user);
+    }
+
+    const user = await userService.getUserById(id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
     res.json(user);
   } catch (error) {
+    console.error("Error in getUser controller:", error);
+    if (error.message === "Invalid ID format") {
+      return res.status(400).json({ message: "Invalid user ID format" });
+    }
     next(error);
   }
 };
@@ -75,6 +96,28 @@ exports.updateUser = [
     }
   },
 ];
+
+exports.getMe = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    res.json(req.user);
+  } catch (error) {
+    console.error("Error in getMe:", error);
+    next(error);
+  }
+};
+
+exports.getAllUsers = async (req, res, next) => {
+  try {
+    const users = await userService.getAllUsers();
+    res.json(users);
+  } catch (error) {
+    console.error("Error in getAllUsers:", error);
+    next(error);
+  }
+};
 
 exports.deleteUser = async (req, res, next) => {
   try {
